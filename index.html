@@ -91,6 +91,7 @@ placeholder="Напишите ваш отзыв..."
 </div>
 
 <script>
+<script>
 
 async function sendReview(){
 
@@ -102,10 +103,12 @@ const rating=document.getElementById("rating").value;
 
 const message=document.getElementById("message").value;
 
-if(message.trim()==""){
-    alert("Введите отзыв");
-    return;
+...
+
 }
+
+</script>
+
 
 const response=await fetch("/api/review",{
 method:"POST",
