@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -98,7 +99,7 @@ async function sendReview() {
     const table = new URLSearchParams(window.location.search).get("table") || "Не указан";
 
     const name = document.getElementById("name").value.trim();
-    const rating = document.getElementById("rating").value;
+    const rating = parseInt(document.getElementById("rating").value);
     const message = document.getElementById("message").value.trim();
 
     if (message === "") {
@@ -121,17 +122,32 @@ async function sendReview() {
             })
         });
 
-        if (response.ok) {
+        if (!response.ok) {
+            alert("Ошибка отправки.");
+            return;
+        }
 
-            alert("Спасибо за отзыв ❤️");
+        // Очистка формы
+        document.getElementById("name").value = "";
+        document.getElementById("message").value = "";
+        document.getElementById("rating").value = "5";
 
-            document.getElementById("name").value = "";
-            document.getElementById("message").value = "";
-            document.getElementById("rating").value = "5";
+        // Если оценка 4 или 5
+        if (rating >= 4) {
+
+            const go2gis = confirm(
+                "Спасибо за высокую оценку! ❤️\n\n" +
+                "Будем очень благодарны, если вы оставите отзыв в 2ГИС.\n\n" +
+                "Перейти в 2ГИС?"
+            );
+
+            if (go2gis) {
+                window.location.href = "https://2gis.kz/firm/70000001069030477";
+            }
 
         } else {
 
-            alert("Ошибка отправки отзыва.");
+            alert("Спасибо за отзыв! Мы обязательно учтем ваше мнение ❤️");
 
         }
 
@@ -147,3 +163,4 @@ async function sendReview() {
 
 </body>
 </html>
+```
