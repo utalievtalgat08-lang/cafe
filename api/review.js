@@ -5,7 +5,7 @@ export default async function handler(req, res) {
 
   const { table, name, rating, message } = req.body || {};
 
-  // Проверка обязательных полей
+  // Проверка обязательных полей (исправлено: добавлены ||)
   const ratingNum = Number(rating);
   if (!message || typeof message !== "string" || message.trim() === "") {
     return res.status(400).json({ error: "Поле 'message' обязательно" });
@@ -32,6 +32,7 @@ ${message}
 `;
 
   try {
+    // 1. Отправляем основное сообщение с отзывом
     const response = await fetch(
       `https://api.telegram.org/bot${token}/sendMessage`,
       {
@@ -50,6 +51,18 @@ ${message}
       const errBody = await response.text();
       console.error("Ошибка Telegram API:", errBody);
       return res.status(502).json({ error: "Не удалось отправить сообщение в Telegram" });
+    }
+
+    // 2. ДОПОЛНИТЕЛЬНАЯ ЛОГИКА: Если оценка высокая, отправляем просьбу о отзыве в 2ГИС
+    if (ratingNum >= 4) {
+      await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: `⭐ Отличный результат! Не желаете ли оставить отзыв в 2ГИС?\nhttps://2gis.ru/https://2gis.kz/uralsk/firm/70000001069030477`,
+        }),
+      });
     }
 
     return res.status(200).json({ success: true });
