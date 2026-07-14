@@ -1,40 +1,60 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({ error: "Метод не разрешён" });
   }
 
-  const { table, name, rating, message } = req.body;
+  const { table, name, rating, message } = req.body || {};
+
+  // Проверка обязательных полей
+  const ratingNum = Number(rating);
+  if (!message || typeof message !== "string" || message.trim() === "") {
+    return res.status(400).json({ error: "Поле 'message' обязательно" });
+  }
+  if (!Number.isFinite(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+    return res.status(400).json({ error: "Поле 'rating' должно быть числом от 1 до 5" });
+  }
+
+  // Проверка переменных окружения
+  const token = process.env.TELEGRAM_TOKEN;
+  const chatId = process.env.CHAT_ID;
+  if (!token || !chatId) {
+    console.error("Отсутствуют переменные окружения TELEGRAM_TOKEN или CHAT_ID");
+    return res.status(500).json({ error: "Сервер настроен некорректно" });
+  }
 
   const text = `
 📢 Новый отзыв
-
 🍽 Стол: ${table || "-"}
-
 👤 Имя: ${name || "Не указано"}
-
-⭐ Оценка: ${rating}/5
-
+⭐ Оценка: ${ratingNum}/5
 💬 Отзыв:
 ${message}
 `;
 
-  const response = await fetch(
-    `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        chat_id: process.env.CHAT_ID,
-        text,
-      }),
+  try {
+    const response = await fetch(
+      `https://api.telegram.org/bot${token}/sendMessage`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errBody = await response.text();
+      console.error("Ошибка Telegram API:", errBody);
+      return res.status(502).json({ error: "Не удалось отправить сообщение в Telegram" });
     }
-  );
 
-  if (!response.ok) {
-    return res.status(500).json({ error: "Telegram error" });
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("Ошибка при отправке запроса:", err);
+    return res.status(500).json({ error: "Внутренняя ошибка сервера" });
   }
-
-  res.status(200).json({ success: true });
 }
