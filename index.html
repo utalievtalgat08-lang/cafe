@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Книга отзывов</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f4f4f4;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+padding:20px;
+}
+
+.container{
+width:100%;
+max-width:420px;
+background:#fff;
+padding:25px;
+border-radius:15px;
+box-shadow:0 5px 20px rgba(0,0,0,.15);
+}
+
+h2{
+text-align:center;
+margin-bottom:20px;
+}
+
+input,select,textarea{
+width:100%;
+padding:12px;
+margin-bottom:15px;
+border:1px solid #ccc;
+border-radius:10px;
+font-size:16px;
+}
+
+textarea{
+height:120px;
+resize:none;
+}
+
+button{
+width:100%;
+padding:15px;
+background:#009688;
+color:#fff;
+border:none;
+border-radius:10px;
+font-size:18px;
+cursor:pointer;
+}
+
+button:hover{
+background:#00796b;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h2>💬 Оставить отзыв</h2>
+
+<input
+id="name"
+type="text"
+placeholder="Ваше имя (необязательно)"
+>
+
+<select id="rating">
+<option value="5">⭐⭐⭐⭐⭐ Отлично</option>
+<option value="4">⭐⭐⭐⭐ Хорошо</option>
+<option value="3">⭐⭐⭐ Нормально</option>
+<option value="2">⭐⭐ Плохо</option>
+<option value="1">⭐ Очень плохо</option>
+</select>
+
+<textarea
+id="message"
+placeholder="Напишите ваш отзыв..."
+></textarea>
+
+<button onclick="sendReview()">
+Отправить отзыв
+</button>
+
+</div>
+
+<script>
+
+async function sendReview(){
+
+const table=new URLSearchParams(location.search).get("table") || "Неизвестно";
+
+const name=document.getElementById("name").value;
+
+const rating=document.getElementById("rating").value;
+
+const message=document.getElementById("message").value;
+
+if(message.trim()==""){
+
+alert("Введите отзыв");
+
+return;
+
+}
+
+const response=await fetch("/api/review",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+table,
+name,
+rating,
+message
+
+})
+
+});
+
+if(response.ok){
+
+if(Number(rating)>=4){
+
+alert("Спасибо за отзыв ❤️");
+
+}else{
+
+alert("Спасибо! Руководитель получит ваш отзыв.");
+
+}
+
+document.getElementById("name").value="";
+document.getElementById("message").value="";
+document.getElementById("rating").value="5";
+
+}else{
+
+alert("Ошибка отправки.");
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
