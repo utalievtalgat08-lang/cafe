@@ -7,6 +7,7 @@ export default async function handler(req, res) {
 
   const ratingNum = Number(rating);
 
+  // Проверка обязательных полей
   if (!message || typeof message !== "string" || message.trim() === "") {
     return res.status(400).json({ error: "Поле 'message' обязательно" });
   }
@@ -17,21 +18,12 @@ export default async function handler(req, res) {
     });
   }
 
-  // ⭐ Если оценка 4 или 5 — ничего не отправляем в Telegram
-  if (ratingNum >= 4) {
-    return res.status(200).json({
-      success: true,
-      redirectTo2gis: true,
-      url: "https://2gis.kz/uralsk/firm/70000001069030477",
-    });
-  }
-
-  // Только оценки 1–3 идут в Telegram
+  // Проверка переменных окружения
   const token = process.env.TELEGRAM_TOKEN;
   const chatId = process.env.CHAT_ID;
 
   if (!token || !chatId) {
-    console.error("Отсутствуют переменные окружения");
+    console.error("Отсутствуют TELEGRAM_TOKEN или CHAT_ID");
     return res.status(500).json({
       error: "Сервер настроен некорректно",
     });
@@ -65,19 +57,22 @@ ${message}
 
     if (!response.ok) {
       const errBody = await response.text();
-      console.error(errBody);
+      console.error("Ошибка Telegram API:", errBody);
 
       return res.status(502).json({
-        error: "Не удалось отправить сообщение",
+        error: "Не удалось отправить сообщение в Telegram",
       });
     }
 
+    // Возвращаем информацию для сайта
     return res.status(200).json({
       success: true,
-      redirectTo2gis: false,
+      redirectTo2gis: ratingNum >= 4,
+      url: "https://2gis.kz/uralsk/firm/70000001069030477",
     });
+
   } catch (err) {
-    console.error(err);
+    console.error("Ошибка:", err);
 
     return res.status(500).json({
       error: "Внутренняя ошибка сервера",
