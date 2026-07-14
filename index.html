@@ -91,7 +91,6 @@ placeholder="Напишите ваш отзыв..."
 </div>
 
 <script>
-
 async function sendReview(){
 
 const table=new URLSearchParams(window.location.search).get("table") || "Не указан";
@@ -103,6 +102,7 @@ const rating=document.getElementById("rating").value;
 const message=document.getElementById("message").value;
 
 }
+    
 </script>
 const response=await fetch("/api/review",{
 method:"POST",
