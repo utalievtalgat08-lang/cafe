@@ -27,7 +27,9 @@ h2{
     margin-bottom:20px;
 }
 
-input,select,textarea{
+input,
+select,
+textarea{
     width:100%;
     padding:12px;
     margin:10px 0;
@@ -63,76 +65,84 @@ button:hover{
 
 <div class="container">
 
-<h2>💬 Книга отзывов</h2>
+    <h2>💬 Книга отзывов</h2>
 
-<input
-id="name"
-type="text"
-placeholder="Ваше имя (необязательно)"
->
+    <input
+        id="name"
+        type="text"
+        placeholder="Ваше имя (необязательно)"
+    >
 
-<select id="rating">
-<option value="5">⭐⭐⭐⭐⭐ Отлично</option>
-<option value="4">⭐⭐⭐⭐ Хорошо</option>
-<option value="3">⭐⭐⭐ Нормально</option>
-<option value="2">⭐⭐ Плохо</option>
-<option value="1">⭐ Очень плохо</option>
-</select>
+    <select id="rating">
+        <option value="5">⭐⭐⭐⭐⭐ Отлично</option>
+        <option value="4">⭐⭐⭐⭐ Хорошо</option>
+        <option value="3">⭐⭐⭐ Нормально</option>
+        <option value="2">⭐⭐ Плохо</option>
+        <option value="1">⭐ Очень плохо</option>
+    </select>
 
-<textarea
-id="message"
-placeholder="Напишите ваш отзыв..."
-></textarea>
+    <textarea
+        id="message"
+        placeholder="Напишите ваш отзыв..."
+    ></textarea>
 
-<button onclick="sendReview()">
-Отправить отзыв
-</button>
+    <button onclick="sendReview()">
+        Отправить отзыв
+    </button>
 
 </div>
 
 <script>
-async function sendReview(){
+async function sendReview() {
 
-const table=new URLSearchParams(window.location.search).get("table") || "Не указан";
+    const table = new URLSearchParams(window.location.search).get("table") || "Не указан";
 
-const name=document.getElementById("name").value;
+    const name = document.getElementById("name").value.trim();
+    const rating = document.getElementById("rating").value;
+    const message = document.getElementById("message").value.trim();
 
-const rating=document.getElementById("rating").value;
+    if (message === "") {
+        alert("Пожалуйста, напишите отзыв.");
+        return;
+    }
 
-const message=document.getElementById("message").value;
+    try {
+
+        const response = await fetch("/api/review", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                table,
+                name,
+                rating,
+                message
+            })
+        });
+
+        if (response.ok) {
+
+            alert("Спасибо за отзыв ❤️");
+
+            document.getElementById("name").value = "";
+            document.getElementById("message").value = "";
+            document.getElementById("rating").value = "5";
+
+        } else {
+
+            alert("Ошибка отправки отзыва.");
+
+        }
+
+    } catch (error) {
+
+        console.error(error);
+        alert("Не удалось соединиться с сервером.");
+
+    }
 
 }
-    
-</script>
-const response=await fetch("/api/review",{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-table,
-name,
-rating,
-message
-})
-});
-
-if(response.ok){
-
-alert("Спасибо за отзыв ❤️");
-
-document.getElementById("name").value="";
-document.getElementById("message").value="";
-document.getElementById("rating").value="5";
-
-}else{
-
-alert("Ошибка отправки");
-
-}
-
-}
-
 </script>
 
 </body>
